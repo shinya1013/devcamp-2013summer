@@ -107,11 +107,27 @@ IFS='%'
 while [ 1 ]; do for koma in "${KOMA[@]}"; do
 	echo -ne $koma
 	tput_loop "cuu1"
-	d1=`cat stream`;
-	echo $d1;
-	sleep $(($d1/10));
-	tput clear;
+	CHAR=0
+	read -s -n 1 CHAR < /tmp/StreamTest
+# 数字チェク
+	while [[ ! $CHAR =~ ^[0-9]+$ ]]; do
+		read -s -n 1 CHAR < /tmp/StreamTest
+	done
+	echo $CHAR
+# bashでは少数の計算ができないので、閾値で判定する
+	if [ $CHAR -lt 5 ];then
+		#sleep $REFRESH_TIME;
+		sleep 0.2;
+		echo "--------------------------"
+	else
+		sleep 1.5;
+		echo "==================="
+	fi
+		tput clear;
+#find . -name "*.txt" | while read SRC; do
+#        cat $SRC;
+#done
+done;
 done; 
-done
 
 ########################################
