@@ -1,11 +1,20 @@
 #!/bin/bash
 
-# functions
+#################################
+# 
+# 
+# Usage:
+# Ctrl-cで終了
+# 
+#################################
+
+###########################
+# キーボードイベントをトラップ
+###########################
 sigtrap()
 {
 	# カーソルを再度表示
-	tput cvvis
-
+    tput civis
 	# カーソルをリセット
 	tput_loop "cud1"
 	tput clear
@@ -20,6 +29,10 @@ sigtrap()
 	exit 1
 }
 
+###########################
+# 文字を解析し、カラーピクセルに変換nする
+# 
+###########################
 colorize()
 {
 	if [ "$1" = '\n' ];then
@@ -34,39 +47,76 @@ colorize()
 	fi
 }
 
+
+######################################################
+# アニメーション再生
+######################################################
 while IFS= read line
 # 各行ごとの処理
 do for ((i=0; i < ${#line}; i++)); do
-	chara="${line:i:1}";
-	colorize "$chara"
-	
+       chara="${line:i:1}";
+       colorize "$chara"
+
 done;
- 
+
 echo;
 done < $1
 
-# def
-REFRESH_TIME="0.8"
 
-LINES_PER_IMG=$(( $(echo $IMG[0] | sed 's/\\n/\n/g' | wc -l) + 1))
+########################################################################
+# def
+REFRESH_TIME="0.5"
+# アニメーション定義
+KOMA=(
+"
+                       _                      \n\
+                      | |                     \n\
+(」・ω・)」えい!     | |                     \n\
+----------------------------------------------\n
+" "
+                       _                      \n\
+                      | |                     \n\
+      (/・ω・)/やー! | |                     \n\
+----------------------------------------------\n
+" "
+                       _                      \n\
+                      | |   -(  ^ ω ^)-とう! \n\
+                      | |                     \n\
+----------------------------------------------\n
+"
+)
+
 
 # used for cuu1(cursor up) and cud1(cursor down)
-tput_loop() { for((x=0; x < $LINES_PER_IMG; x++)); do tput $1; done; }
+tput_loop() {
+	for((x=0; x < $LINES_PER_KOMA; x++)); do
+		tput $1;
+	done;
+}
 
-# ^C abort, script cleanup
+# トラップ
 trap sigtrap INT
 
-# need multi-space strings
+LINES_PER_KOMA=$(( $(echo $KOMA[0] | sed 's/\\n/\n/g' | wc -l) + 1))
+
+# カーソルを再度表示
+tput civis
+
+# main loop コマ表示ループを繰り返し表示する
 IFS='%'
 
 # disable cursor
+#tput cnorm
+tput vs
 
-# main loop
+
 # コマ表示ループを繰り返し表示する
-while [ 1 ]; do for koma in "${IMG[@]}"; do
+while [ 1 ]; do for koma in "${KOMA[@]}"; do
 	echo -ne $koma
 	tput_loop "cuu1"
 	sleep $REFRESH_TIME
-done; done
+	tput clear;
+done; 
+done
 
-
+########################################
